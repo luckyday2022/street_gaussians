@@ -60,6 +60,27 @@ python street_crafter/data_processor/kexuegu_processor/generate_sky_mask.py \
 - `--box_threshold` 传 1 个值时对全部相机生效；也可按相机顺序传多个值（数量需等于 `--cams` 数量）。
 - 结果输出到 `.../sky_mask/*.png`，文件名与 `images/*.png` 同名。
 
+### 6) Split Ground / Non-ground from Road Masks (Optional)
+如果你已经用 `Mask2Former` 生成了每帧每相机的路面 mask（文件名形如 `000650_0.png`），可以执行：
+
+```bash
+python street_gaussians/data_processor/kexuegu_processor/kexuegu_split_ground_from_masks.py \
+  --scene_dir data/20260113/waymo_format/training_set_processed/000 \
+  --mask_dir data/20260113/waymo_format/training_set_processed/000/road_mask \
+  --cams 0 1 2 3 4 5 6 7 \
+  --min_votes 2 \
+  --positive_ratio 0.5 \
+  --save_stats
+```
+
+输出：
+- `lidar/ground/*.ply`
+- `lidar/non_ground/*.ply`
+
+补充：
+- `--mask_mode binary`：默认二值图，像素值 `>= --mask_threshold` 视作路面。
+- `--mask_mode label --road_label 1`：单通道类别图，指定路面类别 ID。
+
 ## 指定 8 相机 + 指定帧范围（示例：600-700）
 ### 1) Convert
 ```bash
@@ -118,6 +139,8 @@ data/20260113/waymo_format/
 │       ├── track/
 │       └── lidar/
 │           ├── background/
+│           ├── ground/        # optional
+│           ├── non_ground/    # optional
 │           ├── actor/
 │           ├── depth/
 │           └── color_render/
@@ -135,4 +158,3 @@ data/20260113/waymo_format/
   --save_dir data/20260113/waymo_format/training_set_processed \
   --cams "0 1 2 3 4 5 6 7" \
   --start_frame_id 650 --end_frame_id 700
-
